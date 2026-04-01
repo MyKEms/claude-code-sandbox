@@ -60,7 +60,10 @@ services:
       # --- Claude OAuth tokens (read-write for refresh) ---
       - ${CLAUDE_CONFIG_PATH}:/home/vscode/.claude
       # --- SSH agent socket (1Password, Keeper, or custom) ---
-      - ${SSH_AGENT_SOCK_HOST:-/dev/null}:/home/vscode/.ssh-agent/agent.sock
+      # Long-form syntax required — 1Password path contains spaces
+      - type: bind
+        source: ${SSH_AGENT_SOCK_HOST:-/dev/null}
+        target: /home/vscode/.ssh-agent/agent.sock
       # --- SSH keys (read-only) ---
       - ${SSH_HOST_PATH}:/home/vscode/.ssh:ro
       # --- Scripts (read-only) ---
