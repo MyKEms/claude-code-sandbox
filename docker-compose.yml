@@ -1,0 +1,113 @@
+# ============================================================
+# Safe Agentic AI — Docker Compose
+# ============================================================
+# Two-container architecture:
+#   1. proxy  — Squid forward proxy (allowlist-only egress)
+#   2. claude — Workspace with Claude CLI (no direct internet)
+#
+# The workspace can ONLY reach the internet through the proxy.
+# The proxy ONLY allows domains listed in allowed-domains.txt.
+# ============================================================
+
+services:
+  # --------------------------------------------------------
+  # Squid Proxy — egress gatekeeper
+  # --------------------------------------------------------
+  proxy:
+    image: ubuntu/squid:latest
+    container_name: claude-proxy
+    networks:
+      - claude-net      # internal: workspace ↔ proxy
+      - proxy-egress    # external: proxy → internet
+    volumes:
+      - ./proxy/squid.conf:/etc/squid/squid.conf:ro
+      - ./proxy/allowed-domains.txt:/etc/squid/allowed-domains.txt:ro
+      - squid-cache:/var/spool/squid
+    healthcheck:
+      test: ["CMD-SHELL", "squid -k check || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: ${PROXY_MEMORY:-256M}
+          cpus: "${PROXY_CPUS:-1}"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # --------------------------------------------------------
+  # Claude Workspace — sandboxed dev environment
+  # --------------------------------------------------------
+  claude:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    container_name: claude-workspace
+    depends_on:
+      proxy:
+        condition: service_healthy
+    networks:
+      - claude-net      # internal only — NO proxy-egress
+    working_dir: /workspace
+    volumes:
+      # --- Your repos (read-write) ---
+      - ${WORKSPACE_PATH}:/workspace:cached
+      # --- Claude OAuth tokens (read-write for refresh) ---
+      - ${CLAUDE_CONFIG_PATH}:/home/vscode/.claude
+      # --- SSH agent socket (1Password, Keeper, or custom) ---
+      - ${SSH_AGENT_SOCK_HOST:-/dev/null}:/home/vscode/.ssh/agent.sock
+      # --- SSH keys (read-only) ---
+      - ${SSH_HOST_PATH}:/home/vscode/.ssh:ro
+      # --- Scripts (read-only) ---
+      - ./scripts:/scripts:ro
+      # --- npm cache (persistent) ---
+      - claude-cache:/home/vscode/.npm
+      # --- Ephemeral temp ---
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: ${TMP_SIZE:-536870912}
+    environment:
+      SSH_AUTH_SOCK: /home/vscode/.ssh/agent.sock
+      HTTP_PROXY: http://proxy:3128
+      HTTPS_PROXY: http://proxy:3128
+      NO_PROXY: localhost,127.0.0.1
+      PLAYWRIGHT_BROWSERS_PATH: /opt/pw-browsers
+      GIT_USER_NAME: ${GIT_USER_NAME:-}
+      GIT_USER_EMAIL: ${GIT_USER_EMAIL:-}
+      SSH_SIGNING_KEY: ${SSH_SIGNING_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-}
+      CLAUDE_MAX_TURNS: ${CLAUDE_MAX_TURNS:-}
+    deploy:
+      resources:
+        limits:
+          memory: ${WORKSPACE_MEMORY:-4G}
+          cpus: "${WORKSPACE_CPUS:-4}"
+    command: sleep infinity
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+# --------------------------------------------------------
+# Networks
+# --------------------------------------------------------
+networks:
+  claude-net:
+    internal: true    # No internet — workspace is jailed here
+  proxy-egress: {}    # Proxy's exit to the real internet
+
+# --------------------------------------------------------
+# Volumes
+# --------------------------------------------------------
+volumes:
+  squid-cache:
+  claude-cache:

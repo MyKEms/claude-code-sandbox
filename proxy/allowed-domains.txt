@@ -1,0 +1,86 @@
+# ============================================================
+# Allowed Domains — Squid Proxy Allowlist
+# ============================================================
+# Only these domains can be reached from the workspace.
+# Edit and run: ./scripts/proxy-ctl.sh reload
+# Prefix with . to match all subdomains (e.g. .github.com)
+# ============================================================
+
+# --- Anthropic / Claude (required) ---
+.anthropic.com
+.claude.ai
+.claude.com
+downloads.claude.ai
+.statsigapi.net
+.statsig.com
+mcp-proxy.anthropic.com
+status.anthropic.com
+
+# --- npm / Node.js ---
+.npmjs.org
+.npmjs.com
+.deb.nodesource.com
+
+# --- GitHub ---
+.github.com
+.github.io
+.githubusercontent.com
+.githubassets.com
+.ghcr.io
+
+# --- GitLab ---
+.gitlab.com
+.gitlab.io
+.gitlab-static.net
+
+# --- Cloudflare / CDN ---
+.cloudflare.com
+.cloudflareinsights.com
+.cloudflare-dns.com
+.one.one.one.one
+.workers.dev
+.pages.dev
+
+# --- Google (APIs, fonts, etc.) ---
+.googleapis.com
+.google.com
+
+# --- Microsoft / Azure (Playwright downloads) ---
+.azureedge.net
+
+# --- System / Package Managers ---
+.ubuntu.com
+.archive.ubuntu.com
+.security.ubuntu.com
+.launchpad.net
+.debian.org
+
+# --- Python ---
+.pypi.org
+.pythonhosted.org
+
+# --- Go / Rust ---
+.pkg.go.dev
+.crates.io
+.docs.rs
+
+# --- Documentation ---
+.stackoverflow.com
+.stackexchange.com
+.developer.mozilla.org
+.docs.python.org
+
+# --- Playwright ---
+.playwright.dev
+
+# --- Docker ---
+.docker.io
+.docker.com
+
+# ============================================================
+# ADD YOUR DOMAINS BELOW
+# ============================================================
+# Examples:
+# .your-company.com
+# .your-server.example.com
+# .jira.atlassian.com
