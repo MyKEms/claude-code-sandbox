@@ -45,10 +45,18 @@ This means `--dangerously-skip-permissions` is safe to use: the agent has freedo
 
 **Step 1 — Clone and configure:**
 
+macOS / Linux:
 ```bash
 git clone https://github.com/MyKEms/safe-agentic-ai.git
 cd safe-agentic-ai
 ./setup.sh
+```
+
+Windows (run from **Git Bash** or **WSL**, not PowerShell/CMD):
+```bash
+git clone https://github.com/MyKEms/safe-agentic-ai.git
+cd safe-agentic-ai
+bash setup.sh
 ```
 
 **Step 2 — Open in VS Code:**
