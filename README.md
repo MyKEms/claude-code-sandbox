@@ -220,6 +220,32 @@ The `setup.sh` wizard auto-detects your platform and generates the correct `.env
 
 ## Troubleshooting
 
+> **Best debugging tip:** If something isn't working, open a **regular terminal on your host** and ask Claude CLI (without dangerous mode) to help you debug. Paste the error, describe what happened — it will read docker logs, inspect configs, and fix the issue for you. This is the fastest way to solve any devcontainer problem. Example:
+>
+> ```bash
+> # On your host (not inside the container):
+> claude
+> # Then paste: "My devcontainer failed to start, here's the error: ..."
+> ```
+>
+> The host-side Claude runs in safe/restrictive mode and has access to your docker-compose, logs, and scripts. It can diagnose and fix most issues in a few prompts.
+
+**Playwright / browser errors: `ERR_TUNNEL_CONNECTION_FAILED`**
+
+This is the proxy working as intended. The domain you're trying to reach is not in `proxy/allowed-domains.txt`. Playwright routes all traffic through Squid — if a domain isn't allowlisted, it gets blocked.
+
+Add the domain **from the host**:
+
+```bash
+./scripts/proxy-ctl.sh add .the-domain.com
+```
+
+Then retry inside the container. No restart needed.
+
+**VS Code extension errors: `Unexpected HTTP response: 403`**
+
+These are harmless. VS Code tries to check for extension updates through the proxy, and the marketplace domains are not on the allowlist. Extensions still install correctly because VS Code downloads them on the host and forwards them into the container. You can safely ignore these 403 errors.
+
 **Container won't start**
 
 ```bash
@@ -227,7 +253,7 @@ docker compose logs claude-workspace
 docker compose logs claude-proxy
 ```
 
-Check for port conflicts (Squid default: 3128) or missing `.env` file.
+Check for port conflicts (Squid default: 3128) or missing `.env` file. If stuck, ask Claude on the host to help — paste the error and it will diagnose it.
 
 **"Connection refused" from workspace**
 
@@ -258,11 +284,15 @@ Run `claude login` again inside the container. If using an API key, check that `
 
 **Apple Silicon: slow or crashing**
 
-The container runs under Rosetta (`--platform=linux/amd64`). This is expected. If performance is a problem, increase the memory limit in `.env`.
+The container runs under Rosetta (`--platform=linux/amd64`). This is expected. If performance is a problem, re-run `./setup.sh` and choose arm64 native mode (no Playwright), or increase the memory limit in `.env`.
 
 **Monitor script shows nothing**
 
 Run `monitor.sh` from the **host**, not from inside the container.
+
+**General debugging**
+
+When in doubt, open a terminal on your host machine and run `claude` (safe mode). Describe the problem, paste the error. It can read your docker-compose.yml, check container logs, inspect proxy config, and suggest fixes. This is faster than manual debugging and safer than trying to fix things from inside the container.
 
 ## Files
 
