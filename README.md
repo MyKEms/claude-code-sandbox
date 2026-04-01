@@ -34,6 +34,13 @@ Two Docker networks. The workspace container has **zero direct internet access**
 
 This means `--dangerously-skip-permissions` is safe to use: the agent has freedom inside a locked box.
 
+## Prerequisites
+
+1. **Docker Desktop** — [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) (macOS, Windows, Linux)
+2. **VS Code** — [code.visualstudio.com/Download](https://code.visualstudio.com/Download)
+3. **Dev Containers extension** — install from VS Code: `ms-vscode-remote.remote-containers`
+4. **Claude CLI** (optional, for host-side debugging) — `npm install -g @anthropic-ai/claude-code` or `brew install claude-code`
+
 ## Quick Start
 
 ```bash
