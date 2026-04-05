@@ -17,11 +17,12 @@ The workspace can only reach the internet through the proxy. This makes `--dange
 ```
 Host machine
   └── VS Code Dev Container
-        ├── claude-workspace (internal network, no internet)
+        ├── <name>-workspace (internal network, no internet)
         │     ├── Claude CLI (ccd = dangerous mode)
         │     ├── Playwright MCP (headless Chromium)
+        │     ├── 1Password CLI (op)
         │     └── /workspace ← shared folder from host
-        └── claude-proxy (Squid, allowlist-only)
+        └── <name>-proxy (Squid, allowlist-only)
               └── proxy/allowed-domains.txt
 ```
 
@@ -30,19 +31,19 @@ Host machine
 | File | Purpose |
 |---|---|
 | `docker-compose.yml` | Two-container orchestration, env var driven |
-| `.devcontainer/Dockerfile` | Workspace image (Node 20, Claude CLI, Playwright) |
+| `.devcontainer/Dockerfile` | Workspace image (Node 20, Claude CLI, Playwright, 1Password CLI) |
 | `.devcontainer/devcontainer.json` | VS Code lifecycle hooks |
 | `proxy/squid.conf` | Squid ACLs, timeouts for long-running agents |
 | `proxy/allowed-domains.txt` | Domain allowlist (~50 entries) |
-| `setup.sh` | First-time wizard: platform detection, SSH agent choice, .env generation |
+| `setup.sh` | Template scaffolding (creates project folders) and project configuration wizard |
 | `scripts/preflight.sh` | Host-side check before build (conflicts, missing .env, Docker status) |
-| `scripts/setup-container.sh` | One-time container init (git config, MCP, verification) |
+| `scripts/setup-container.sh` | One-time container init (git config, 1Password CLI, MCP, Claude permissions, verification) |
 | `scripts/welcome.sh` | Startup banner with status checks |
 | `scripts/watchdog.sh` | Auto-restart wrapper for long-running agents |
 | `scripts/monitor.sh` | Live dashboard (run from host) |
 | `scripts/proxy-ctl.sh` | Add/remove domains, reload proxy, test URLs |
 | `scripts/wipe.sh` | Clean reset (soft/hard/nuclear) |
-| `.env.example` | Configuration template — user copies to .env |
+| `.env.example` | Configuration reference — setup.sh generates .env from wizard answers |
 
 ## Conventions
 

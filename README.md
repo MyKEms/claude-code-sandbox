@@ -10,7 +10,7 @@ A containerized, security-first setup for running AI coding agents (Claude Code 
                      [ proxy-egress ]
                             |
                    +------------------+
-                   |  claude-proxy    |
+                   |  <name>-proxy    |
                    |  (Squid)         |
                    |  allowlist-only  |
                    |  default: DENY   |
@@ -19,14 +19,15 @@ A containerized, security-first setup for running AI coding agents (Claude Code 
                      [ claude-net ]          (no internet)
                             |
                    +------------------+
-                   |  claude-workspace|
+                   |  <name>-workspace|
                    |  Ubuntu 22.04   |
                    |  Node 20        |      workspace/
                    |  Claude CLI     |  <-- mounted from host
                    |  Playwright     |
+                   |  1Password CLI  |
                    +------------------+
                             |
-                     SSH agent socket
+                     SSH agent + 1Password sockets
                      (1Password / Keeper / custom)
 ```
 
@@ -74,13 +75,13 @@ Then: `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows) → type **"Dev Containe
 
 Wait for the build to finish (first time takes ~2 minutes, subsequent starts are instant).
 
-**Step 3 — Open a terminal inside the container:**
+**Step 4 — Open a terminal inside the container:**
 
 VS Code will show several terminal tabs at the bottom (Configuring..., Dev Containers). **Ignore those** — they are build logs.
 
 Click the **`+`** button in the terminal panel to open a new terminal. You're now inside the container at `/workspace`.
 
-**Step 4 — Start Claude:**
+**Step 5 — Start Claude:**
 
 ```bash
 ccd
@@ -90,7 +91,7 @@ This launches Claude CLI in autonomous mode (`--dangerously-skip-permissions` �
 
 On first run, Claude will ask you to authenticate. Follow the browser link, paste the code back. Your token is stored in `~/.claude` (shared from host) and persists across restarts.
 
-**Step 5 — Switch to the best model:**
+**Step 6 — Switch to the best model:**
 
 Inside Claude CLI, type:
 
@@ -133,12 +134,11 @@ Each project gets:
 
 | Component | Purpose |
 |---|---|
-| `claude-proxy` | Squid forward proxy, allowlist-only egress, default deny |
-| `claude-workspace` | Ubuntu 22.04 + Node 20 + Claude CLI + Playwright |
+| `<name>-proxy` | Squid forward proxy, allowlist-only egress, default deny |
+| `<name>-workspace` | Ubuntu 22.04 + Node 20 + Claude CLI + Playwright + 1Password CLI |
 | `claude-net` | Internal Docker network (no internet) |
 | `proxy-egress` | Proxy-only network with internet access |
 | `workspace/` | Shared folder between host and container |
-| `.claude/settings.local.json` | Claude CLI permission grants |
 | `proxy/allowed-domains.txt` | Domain allowlist for egress |
 
 ## How It Works
@@ -285,9 +285,9 @@ If you skip the SSH agent, key-based git operations (push, pull over SSH) won't 
 | Apple Silicon | Rosetta emulation (automatic) | N/A | N/A |
 | SSH socket | 1Password / Keeper native path | Docker Desktop forwarded socket | `SSH_AUTH_SOCK` |
 | Resources | Configurable in `.env` | Configurable in `.env` | Configurable in `.env` |
-| Setup | `./setup.sh` | `bash setup.sh` (Git Bash or WSL) | `./setup.sh` |
+| Setup | `./setup.sh <path>` | `bash setup.sh <path>` (Git Bash or WSL) | `./setup.sh <path>` |
 
-The `setup.sh` wizard auto-detects your platform and generates the correct `.env` configuration.
+The `setup.sh` wizard scaffolds a project folder, auto-detects your platform, and generates the correct `.env` configuration.
 
 **Windows notes:**
 - Run `setup.sh` from Git Bash or WSL2 terminal
@@ -325,8 +325,7 @@ These are harmless. VS Code tries to check for extension updates through the pro
 **Container won't start**
 
 ```bash
-docker compose logs claude-workspace
-docker compose logs claude-proxy
+docker compose logs    # all containers
 ```
 
 Check for port conflicts (Squid default: 3128) or missing `.env` file. If stuck, ask Claude on the host to help — paste the error and it will diagnose it.
@@ -375,7 +374,7 @@ When in doubt, open a terminal on your host machine and run `claude` (safe mode)
 ```
 safe-agentic-ai/
 ├── .devcontainer/
-│   ├── Dockerfile              # Ubuntu 22.04, Node 20, Claude CLI, Playwright
+│   ├── Dockerfile              # Ubuntu 22.04, Node 20, Claude CLI, Playwright, 1Password CLI
 │   └── devcontainer.json       # VS Code dev container config
 ├── proxy/
 │   ├── squid.conf              # Squid proxy (allowlist-only, default deny)
@@ -390,7 +389,7 @@ safe-agentic-ai/
 ├── workspace/                  # Shared folder (host <-> container)
 ├── docker-compose.yml          # Two containers: proxy + workspace
 ├── .env.example                # Configuration template
-├── setup.sh                    # First-time setup wizard
+├── setup.sh                    # Template scaffolding + project configuration
 └── README.md
 ```
 
