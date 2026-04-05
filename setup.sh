@@ -117,7 +117,6 @@ echo ""
 # ─── Platform-specific defaults ─────────────────────────��───────────────────
 WORKSPACE_DEFAULT="$(pwd)/workspace"
 SSH_PATH_DEFAULT="$HOME/.ssh"
-CLAUDE_PATH_DEFAULT="$HOME/.claude"
 
 case "$PLATFORM" in
   macos)
@@ -147,9 +146,6 @@ WORKSPACE="${WORKSPACE_INPUT:-$WORKSPACE_DEFAULT}"
 
 read -rp "  SSH keys folder [$SSH_PATH_DEFAULT]: " SSH_INPUT
 SSH_PATH="${SSH_INPUT:-$SSH_PATH_DEFAULT}"
-
-read -rp "  Claude config folder [$CLAUDE_PATH_DEFAULT]: " CLAUDE_INPUT
-CLAUDE_PATH="${CLAUDE_INPUT:-$CLAUDE_PATH_DEFAULT}"
 echo ""
 
 # ─── SSH Agent Provider ────────────────────────────────────────────────────
@@ -346,7 +342,6 @@ OP_CLI_SOCK_HOST=$OP_CLI_SOCK
 # Paths
 WORKSPACE_PATH=$WORKSPACE
 SSH_HOST_PATH=$SSH_PATH
-CLAUDE_CONFIG_PATH=$CLAUDE_PATH
 
 # Resources
 WORKSPACE_MEMORY=$MEMORY

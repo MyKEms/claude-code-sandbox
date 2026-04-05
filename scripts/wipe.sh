@@ -50,47 +50,34 @@ echo ""
 # ─── Soft reset ──────────────────────────────────────────────────────────────
 if [ "$MODE" = "--soft" ]; then
   echo -e "${G}>>> Soft reset${N}"
-  echo "Cleaning ONLY container sessions (host sessions untouched)..."
+  echo "Cleaning container sessions and temp files..."
 
-  CLAUDE_DIR="$HOME/.claude"
-
-  for d in "$CLAUDE_DIR"/projects/-workspace*; do
-    [ -d "$d/sessions" ] && rm -rf "$d/sessions"/* 2>/dev/null
-  done
-  echo "  Container project sessions:  cleared"
-
-  rm -rf "$CLAUDE_DIR"/watchdog-logs/* 2>/dev/null
-  echo "  Watchdog logs:               cleared"
+  docker compose exec claude bash -c "rm -rf /home/vscode/.claude/sessions/* /home/vscode/.claude/projects/*/sessions/* 2>/dev/null" || true
+  echo "  Claude sessions:  cleared"
 
   docker compose exec claude rm -f /home/vscode/.claude.json 2>/dev/null || true
-  echo "  MCP config:                  cleared"
+  echo "  MCP config:       cleared"
 
   docker compose exec claude bash -c "rm -rf /tmp/* 2>/dev/null" || true
-  echo "  Container /tmp:              cleared"
+  echo "  Container /tmp:   cleared"
 
   echo ""
   echo -e "  ${B}NOT touched:${N}"
-  echo "  ~/.claude/sessions/          (global sessions)"
-  echo "  ~/.claude/projects/-Users-*  (host project sessions)"
+  echo "  Claude credentials (docker volume)"
+  echo "  Workspace files"
   echo ""
   echo -e "${G}Done.${N} Run 'bash /scripts/setup-container.sh' inside to re-setup MCP."
 
 # ─── Hard reset ──────────────────────────────────────────────────────────────
 elif [ "$MODE" = "--hard" ]; then
   echo -e "${Y}>>> Hard reset${N}"
-  read -rp "Destroy containers, volumes, images (host sessions safe). Continue? [y/N]: " CONFIRM
+  echo "Destroys containers, volumes (including Claude credentials), and images."
+  read -rp "Continue? [y/N]: " CONFIRM
   [ "$CONFIRM" != "y" ] && echo "Cancelled." && exit 0
-
-  CLAUDE_DIR="$HOME/.claude"
-  for d in "$CLAUDE_DIR"/projects/-workspace*; do
-    [ -d "$d/sessions" ] && rm -rf "$d/sessions"/* 2>/dev/null
-  done
-  rm -rf "$CLAUDE_DIR"/watchdog-logs/* 2>/dev/null
-  echo "  Container sessions: cleared"
 
   echo "Stopping containers..."
   docker compose down -v 2>/dev/null
-  echo "  Containers + volumes: removed"
+  echo "  Containers + volumes: removed (Claude credentials lost — will need to re-login)"
 
   echo "Removing images..."
   docker compose down --rmi local 2>/dev/null
@@ -98,29 +85,24 @@ elif [ "$MODE" = "--hard" ]; then
 
   docker builder prune -f 2>/dev/null | tail -1
   echo ""
-  echo -e "  ${B}NOT touched:${N} host sessions, credentials, settings, workspace"
+  echo -e "  ${B}NOT touched:${N} workspace files, host SSH keys"
   echo ""
   echo -e "${Y}Done.${N} Run 'docker compose build && docker compose up -d' to rebuild."
 
 # ─── Nuclear reset ───────────────────────────────────────────────────────────
 elif [ "$MODE" = "--nuclear" ]; then
   echo -e "${R}>>> Nuclear reset${N}"
-  echo -e "${R}WARNING: This will also clean host ~/.claude sessions!${N}"
+  echo "Destroys everything: containers, volumes, images, and workspace files."
   read -rp "Type 'nuke' to confirm: " CONFIRM
   [ "$CONFIRM" != "nuke" ] && echo "Cancelled." && exit 0
 
   docker compose down -v --rmi local 2>/dev/null
   echo "  Containers + volumes + images: destroyed"
-
-  rm -rf ~/.claude/sessions/* 2>/dev/null
-  rm -rf ~/.claude/projects/*/sessions/* 2>/dev/null
-  echo "  ~/.claude/sessions: cleared"
   echo ""
   echo -e "${R}NOT removed (by design):${N}"
-  echo "  ~/.claude/.credentials.json   (your OAuth login)"
-  echo "  ~/.claude/settings.json       (your preferences)"
-  echo "  ~/.ssh/                        (SSH keys)"
-  echo "  workspace/                     (your repos)"
+  echo "  .env                           (project config)"
+  echo "  proxy/allowed-domains.txt      (domain allowlist)"
+  echo "  ~/.ssh/                        (host SSH keys)"
   echo ""
   echo -e "${R}Done.${N} Fresh start: docker compose build && docker compose up -d"
 fi

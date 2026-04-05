@@ -103,7 +103,7 @@ Select **Opus** (usually the default), then press the **right arrow key** to set
 
 You're ready. Start prompting.
 
-> **Tip:** If Claude auth fails from inside the container (browser redirect doesn't work), run `claude login` on your **host machine** first — the token is shared via the mount.
+> **Tip:** Claude credentials are stored in a Docker volume and persist across rebuilds. You only need to `claude login` once per project. A hard wipe (`wipe.sh --hard`) destroys volumes — you'll need to re-authenticate after that.
 
 ## Template vs Project
 
@@ -209,9 +209,9 @@ Three levels of cleanup via `wipe.sh`:
 
 | Level | What it does |
 |---|---|
-| `--soft` | Clears container sessions, watchdog logs, MCP config. Host sessions untouched. |
-| `--hard` | Soft + destroys containers, volumes, images. Full rebuild needed. Host sessions safe. |
-| `--nuclear` | Hard + clears host `~/.claude` sessions too. **Affects host Claude CLI.** |
+| `--soft` | Clears container sessions, MCP config, temp files. Credentials untouched. |
+| `--hard` | Soft + destroys containers, volumes, images. **Claude credentials lost** — re-login needed. |
+| `--nuclear` | Hard + destroys everything. Only `.env` and proxy config survive. |
 
 ```bash
 ./scripts/wipe.sh --soft
@@ -219,7 +219,7 @@ Three levels of cleanup via `wipe.sh`:
 ./scripts/wipe.sh --nuclear
 ```
 
-**Never touched** by any level: `~/.claude/.credentials.json`, `~/.claude/settings.json`, `~/.ssh/`, your workspace repos.
+**Never touched** by any level: `.env`, `proxy/allowed-domains.txt`, `~/.ssh/`.
 
 ## Authentication
 
@@ -230,7 +230,7 @@ Three levels of cleanup via `wipe.sh`:
 claude login
 ```
 
-Follow the browser flow. The token is stored in `~/.claude` (mounted from host) and survives restarts.
+Follow the browser flow. The token is stored in a Docker volume and survives container rebuilds.
 
 **API key fallback:**
 

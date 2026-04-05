@@ -60,8 +60,8 @@ services:
     volumes:
       # --- Your repos (read-write) ---
       - ${WORKSPACE_PATH}:/workspace:cached
-      # --- Claude OAuth tokens (read-write for refresh) ---
-      - ${CLAUDE_CONFIG_PATH}:/home/vscode/.claude
+      # --- Claude CLI config (persistent volume — survives rebuilds) ---
+      - claude-config:/home/vscode/.claude
       # --- SSH agent socket (1Password, Keeper, or custom) ---
       # Long-form syntax required — 1Password path contains spaces
       - type: bind
@@ -125,4 +125,5 @@ networks:
 # --------------------------------------------------------
 volumes:
   squid-cache:
+  claude-config:
   claude-cache:
