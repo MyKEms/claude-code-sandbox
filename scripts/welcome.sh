@@ -68,8 +68,9 @@ fi
 
 # Playwright
 echo -e -n "  ${B}Playwright:${N}  "
-if command -v npx &>/dev/null && npx playwright --version &>/dev/null 2>&1; then
-  echo -e "${G}$(npx playwright --version 2>/dev/null)${N} (Chromium, headless)"
+PW_VER=$(node -e "try{console.log(require('playwright/package.json').version)}catch{}" 2>/dev/null)
+if [ -n "$PW_VER" ] && [ -d "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}" ]; then
+  echo -e "${G}${PW_VER}${N} (Chromium, headless)"
 else
   echo -e "${Y}not installed${N}"
 fi
