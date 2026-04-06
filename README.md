@@ -20,7 +20,7 @@ A containerized, security-first setup for running AI coding agents (Claude Code 
                             |
                    +------------------+
                    |  <name>-workspace|
-                   |  Ubuntu 22.04   |
+                   |  Ubuntu 24.04   |
                    |  Node 20        |      workspace/
                    |  Claude CLI     |  <-- mounted from host
                    |  Playwright     |
@@ -135,7 +135,7 @@ Each project gets:
 | Component | Purpose |
 |---|---|
 | `<name>-proxy` | Squid forward proxy, allowlist-only egress, default deny |
-| `<name>-workspace` | Ubuntu 22.04 + Node 20 + Claude CLI + Playwright + 1Password CLI |
+| `<name>-workspace` | Ubuntu 24.04 + Node 20 + Claude CLI + Playwright + 1Password CLI |
 | `claude-net` | Internal Docker network (no internet) |
 | `proxy-egress` | Proxy-only network with internet access |
 | `workspace/` | Shared folder between host and container |
@@ -282,7 +282,7 @@ If you skip the SSH agent, key-based git operations (push, pull over SSH) won't 
 | | macOS | Windows | Linux |
 |---|---|---|---|
 | Docker runtime | Docker Desktop or Colima | Docker Desktop (WSL2 backend) | Docker Engine |
-| Apple Silicon | Rosetta emulation (automatic) | N/A | N/A |
+| Apple Silicon | Native arm64 (no emulation) | N/A | N/A |
 | SSH socket | 1Password / Keeper native path | Docker Desktop forwarded socket | `SSH_AUTH_SOCK` |
 | Resources | Configurable in `.env` | Configurable in `.env` | Configurable in `.env` |
 | Setup | `./setup.sh <path>` | `bash setup.sh <path>` (Git Bash or WSL) | `./setup.sh <path>` |
@@ -359,7 +359,7 @@ Run `claude login` again inside the container. If using an API key, check that `
 
 **Apple Silicon: slow or crashing**
 
-The container runs under Rosetta (`--platform=linux/amd64`). This is expected. If performance is a problem, re-run `./setup.sh` and choose arm64 native mode (no Playwright), or increase the memory limit in `.env`.
+The container runs natively on arm64. If performance is a problem, increase the memory limit in `.env`.
 
 **Monitor script shows nothing**
 
@@ -374,7 +374,7 @@ When in doubt, open a terminal on your host machine and run `claude` (safe mode)
 ```
 safe-agentic-ai/
 ├── .devcontainer/
-│   ├── Dockerfile              # Ubuntu 22.04, Node 20, Claude CLI, Playwright, 1Password CLI
+│   ├── Dockerfile              # Ubuntu 24.04, Node 20, Claude CLI, Playwright, 1Password CLI
 │   └── devcontainer.json       # VS Code dev container config
 ├── proxy/
 │   ├── squid.conf              # Squid proxy (allowlist-only, default deny)

@@ -236,31 +236,6 @@ case "$AGENT_CHOICE" in
 esac
 echo ""
 
-# ─── Container Architecture ─────────────────────────────────────────────────
-CONTAINER_PLATFORM="linux/amd64"
-INSTALL_PLAYWRIGHT="true"
-
-# Only ask on Apple Silicon — Intel Macs and other platforms don't need this
-if [ "$PLATFORM" = "macos" ] && [ "$(uname -m)" = "arm64" ]; then
-  echo -e "${B}  Container Architecture${N}"
-  echo ""
-  echo -e "  Your Mac has an Apple Silicon (ARM) chip. Choose container mode:"
-  echo -e "    ${C}1)${N} amd64 (default) — runs via Rosetta emulation, includes Playwright MCP"
-  echo -e "    ${C}2)${N} arm64 (native)  — faster, but Playwright MCP is NOT available"
-  echo ""
-  read -rp "  Choice [1]: " ARCH_CHOICE
-  ARCH_CHOICE="${ARCH_CHOICE:-1}"
-
-  if [ "$ARCH_CHOICE" = "2" ]; then
-    CONTAINER_PLATFORM="linux/arm64"
-    INSTALL_PLAYWRIGHT="false"
-    echo -e "  ${G}Native arm64 selected.${N} Playwright MCP will be skipped."
-  else
-    echo -e "  ${G}amd64 selected.${N} Runs via Rosetta. Playwright MCP included."
-  fi
-  echo ""
-fi
-
 # ─── Resources ──────────────────────────────────────────────────────────────
 echo -e "${B}  Resources${N}"
 read -rp "  Workspace memory [$MEMORY_DEFAULT]: " MEM_INPUT
@@ -304,10 +279,6 @@ cat > .env << ENVEOF
 PROJECT_NAME=$PROJECT_NAME
 
 PLATFORM=$PLATFORM
-
-# Container architecture
-CONTAINER_PLATFORM=$CONTAINER_PLATFORM
-INSTALL_PLAYWRIGHT=$INSTALL_PLAYWRIGHT
 
 # Git
 GIT_USER_NAME=$GIT_NAME

@@ -1,12 +1,12 @@
 # ============================================================
 # Safe Agentic AI — Workspace Container
 # ============================================================
-# Ubuntu 22.04 with Node 20, Claude CLI, optional Playwright
+# Ubuntu 24.04 with Node 20, Claude CLI, Playwright, 1Password CLI
+# Supports both amd64 and arm64 (Apple Silicon) natively.
 # All network traffic routes through Squid proxy.
 # ============================================================
 
-ARG CONTAINER_PLATFORM=linux/amd64
-FROM --platform=${CONTAINER_PLATFORM} mcr.microsoft.com/devcontainers/base:ubuntu-22.04
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
 # --- System packages ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -42,15 +42,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 RUN npm install -g @anthropic-ai/claude-code
 
 # --- Playwright (Chromium only, headless) ---
-# Skipped on arm64 — Playwright Chromium doesn't run reliably under emulation
-ARG INSTALL_PLAYWRIGHT=true
+# Supported on both amd64 and arm64 since Playwright 1.34
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers
-RUN if [ "$INSTALL_PLAYWRIGHT" = "true" ]; then \
-      npx playwright install --with-deps chromium \
-      && chmod -R 777 /opt/pw-browsers; \
-    else \
-      echo "Playwright installation skipped (arm64 native mode)"; \
-    fi
+RUN npx playwright install --with-deps chromium \
+    && chmod -R 777 /opt/pw-browsers
 
 # --- Route SSH through Squid proxy ---
 RUN mkdir -p /etc/ssh/ssh_config.d && \

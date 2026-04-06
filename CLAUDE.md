@@ -7,7 +7,7 @@ A **template** for creating containerized, security-first environments for runni
 This repo is never used directly as a devcontainer. Run `./setup.sh <path>` to scaffold a new project folder from this template. Each project gets its own `.env`, proxy allowlist, and uniquely named containers.
 
 Two Docker containers per project:
-- **\<name\>-workspace** — Ubuntu 22.04 with Claude CLI, Node 20, Playwright, 1Password CLI. Has zero direct internet access.
+- **\<name\>-workspace** — Ubuntu 24.04 with Claude CLI, Node 20, Playwright, 1Password CLI. Has zero direct internet access.
 - **\<name\>-proxy** — Squid forward proxy. Allowlist-only egress. Default deny.
 
 The workspace can only reach the internet through the proxy. This makes `--dangerously-skip-permissions` safe: the agent has freedom inside a locked box.
@@ -76,7 +76,7 @@ The socket is mounted to `/home/vscode/.ssh-agent/agent.sock` inside the contain
 
 ## Cross-Platform
 
-- macOS (Intel + Apple Silicon): `--platform=linux/amd64` in Dockerfile handles Rosetta
+- macOS (Intel + Apple Silicon): native arm64/amd64, no Rosetta needed
 - Windows: Docker Desktop with WSL2 backend, SSH agent via `/run/host-services/ssh-auth.sock`
 - Linux: Docker Engine, native paths
 

@@ -47,9 +47,6 @@ services:
     build:
       context: .
       dockerfile: .devcontainer/Dockerfile
-      args:
-        CONTAINER_PLATFORM: ${CONTAINER_PLATFORM:-linux/amd64}
-        INSTALL_PLAYWRIGHT: ${INSTALL_PLAYWRIGHT:-true}
     container_name: ${PROJECT_NAME:-claude}-workspace
     depends_on:
       proxy:
