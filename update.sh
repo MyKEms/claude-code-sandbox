@@ -139,6 +139,12 @@ done
 
 chmod +x "$TARGET_DIR/setup.sh" "$TARGET_DIR/update.sh" "$TARGET_DIR"/scripts/*.sh 2>/dev/null || true
 
+# Restore project name in devcontainer.json (it gets overwritten by template default)
+PROJ_NAME=$(grep '^PROJECT_NAME=' "$TARGET_DIR/.env" 2>/dev/null | cut -d= -f2 | tr -d '"' | tr -d "'")
+if [ -n "$PROJ_NAME" ]; then
+  sed -i.bak "s/\"name\": \".*\"/\"name\": \"${PROJ_NAME}\"/" "$TARGET_DIR/.devcontainer/devcontainer.json" && rm -f "$TARGET_DIR/.devcontainer/devcontainer.json.bak"
+fi
+
 echo -e "  ${G}$CHANGES file(s) updated.${N}"
 
 # ─── Check allowed-domains.txt ───────────────────────────────────────────

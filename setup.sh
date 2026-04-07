@@ -321,6 +321,9 @@ if [ ! -d "$WORKSPACE" ]; then
   fi
 fi
 
+# ─── Set devcontainer name to project name ──────────────────────────────────
+sed -i.bak "s/\"name\": \".*\"/\"name\": \"${PROJECT_NAME}\"/" .devcontainer/devcontainer.json && rm -f .devcontainer/devcontainer.json.bak
+
 # ─── Make scripts executable ────────────────────────────────────────────────
 chmod +x scripts/*.sh 2>/dev/null || true
 
