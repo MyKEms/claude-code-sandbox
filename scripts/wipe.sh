@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# wipe.sh – Clean reset of the container environment
+# wipe.sh - Clean reset of the container environment
 # ─────────────────────────────────────────────────────────────────────────────
 # Usage:
 #   ./scripts/wipe.sh              # interactive menu
-#   ./scripts/wipe.sh --soft       # sessions/logs only (keep volumes)
+#   ./scripts/wipe.sh --soft       # sessions/logs only (keep volumes + images)
 #   ./scripts/wipe.sh --hard       # destroy containers, volumes, images
-#   ./scripts/wipe.sh --nuclear    # hard + clean host ~/.claude sessions
 # ─────────────────────────────────────────────────────────────────────────────
 set -uo pipefail
 
@@ -18,7 +17,7 @@ N="\033[0m"
 
 cd "$(dirname "$0")/.."
 
-echo -e "${B}=== Claude Code Sandbox — Wipe Tool ===${N}"
+echo -e "${B}=== Claude Code Sandbox - Wipe Tool ===${N}"
 echo ""
 
 MODE="${1:-}"
@@ -27,20 +26,16 @@ MODE="${1:-}"
 if [ -z "$MODE" ]; then
   echo "What do you want to clean?"
   echo ""
-  echo -e "  ${G}1) Soft reset${N}  – Sessions & temp files only"
+  echo -e "  ${G}1) Soft reset${N}  - Sessions & temp files only"
   echo "                  Memory, credentials, workspace KEPT"
   echo ""
-  echo -e "  ${Y}2) Hard reset${N}  – Containers, volumes, images"
-  echo -e "                  ${Y}WARNING: Claude memory & sessions DESTROYED${N}"
-  echo ""
-  echo -e "  ${R}3) Nuclear${N}     – Everything (containers, volumes, images)"
+  echo -e "  ${R}2) Hard reset${N}  - Containers, volumes, images destroyed"
   echo -e "                  ${R}WARNING: Claude memory & sessions DESTROYED${N}"
   echo ""
-  read -rp "Choice [1/2/3]: " CHOICE
+  read -rp "Choice [1/2]: " CHOICE
   case "$CHOICE" in
     1) MODE="--soft" ;;
     2) MODE="--hard" ;;
-    3) MODE="--nuclear" ;;
     *) echo "Cancelled."; exit 0 ;;
   esac
 fi
@@ -71,61 +66,32 @@ if [ "$MODE" = "--soft" ]; then
 
 # ─── Hard reset ──────────────────────────────────────────────────────────────
 elif [ "$MODE" = "--hard" ]; then
-  echo -e "${Y}>>> Hard reset${N}"
+  echo -e "${R}>>> Hard reset${N}"
   echo ""
-  echo -e "  ${Y}${B}WARNING: This will permanently destroy the claude-state volume.${N}"
-  echo -e "  ${Y}All Claude memory (MEMORY.md, memory files), sessions, and project${N}"
-  echo -e "  ${Y}data stored inside the container will be lost and CANNOT be recovered.${N}"
-  echo ""
-  echo -e "  ${B}To check what's there before wiping:${N}"
-  echo "    docker compose exec claude ls /home/vscode/.claude/projects/-workspace/memory/"
-  echo ""
-  read -rp "Continue? [y/N]: " CONFIRM
-  [ "$CONFIRM" != "y" ] && echo "Cancelled." && exit 0
-
-  echo "Stopping containers..."
-  docker compose down -v 2>/dev/null
-  echo "  Containers + volumes: removed"
-  echo -e "  ${Y}claude-state volume: DESTROYED (memory, sessions, project data gone)${N}"
-
-  echo "Removing images..."
-  docker compose down --rmi local 2>/dev/null
-  echo "  Images: removed (will rebuild)"
-
-  docker builder prune -f 2>/dev/null | tail -1
-  echo ""
-  echo -e "  ${B}NOT touched:${N}"
-  echo "  Workspace files (/workspace)"
-  echo "  Host credentials (~/.claude/.credentials.json)"
-  echo "  Host SSH keys"
-  echo ""
-  echo -e "${Y}Done.${N} Run 'docker compose build && docker compose up -d' to rebuild."
-
-# ─── Nuclear reset ───────────────────────────────────────────────────────────
-elif [ "$MODE" = "--nuclear" ]; then
-  echo -e "${R}>>> Nuclear reset${N}"
-  echo ""
-  echo -e "  ${R}${B}WARNING: This will permanently destroy ALL container state.${N}"
+  echo -e "  ${R}${B}WARNING: This will permanently destroy the claude-state volume.${N}"
   echo -e "  ${R}All Claude memory (MEMORY.md, memory files), sessions, and project${N}"
   echo -e "  ${R}data stored inside the container will be lost and CANNOT be recovered.${N}"
   echo ""
   echo -e "  ${B}To check what's there before wiping:${N}"
   echo "    docker compose exec claude ls /home/vscode/.claude/projects/-workspace/memory/"
   echo ""
-  read -rp "Type 'nuke' to confirm: " CONFIRM
-  [ "$CONFIRM" != "nuke" ] && echo "Cancelled." && exit 0
+  read -rp "Type 'wipe' to confirm: " CONFIRM
+  [ "$CONFIRM" != "wipe" ] && echo "Cancelled." && exit 0
 
   docker compose down -v --rmi local 2>/dev/null
   echo "  Containers + volumes + images: destroyed"
   echo -e "  ${R}claude-state volume: DESTROYED (memory, sessions, project data gone)${N}"
+
+  docker builder prune -f 2>/dev/null | tail -1
   echo ""
-  echo -e "${R}NOT removed (by design):${N}"
+  echo -e "  ${B}NOT touched:${N}"
   echo "  .env                           (project config)"
   echo "  proxy/allowed-domains.txt      (domain allowlist)"
-  echo "  ~/.claude/.credentials.json    (host auth credentials)"
-  echo "  ~/.ssh/                        (host SSH keys)"
+  echo "  Workspace files (/workspace)"
+  echo "  Host credentials (~/.claude/)"
+  echo "  Host SSH keys (~/.ssh/)"
   echo ""
-  echo -e "${R}Done.${N} Fresh start: docker compose build && docker compose up -d"
+  echo -e "${R}Done.${N} Rebuild: docker compose build && docker compose up -d"
 fi
 
 echo ""

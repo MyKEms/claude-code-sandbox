@@ -265,15 +265,13 @@ Three levels of cleanup via `wipe.sh`:
 |---|---|---|
 | `--soft` | Clears sessions, MCP config, temp files | **Kept** |
 | `--hard` | Containers, volumes, images destroyed | **Destroyed** |
-| `--nuclear` | Everything destroyed | **Destroyed** |
 
 ```bash
 ./scripts/wipe.sh --soft
 ./scripts/wipe.sh --hard
-./scripts/wipe.sh --nuclear
 ```
 
-Hard and nuclear wipe destroy the `claude-state` volume - all Claude memory (MEMORY.md, memory files), session history, and project data are permanently lost. The script warns before proceeding and shows how to inspect memory first.
+Hard wipe destroys the `claude-state` volume - all Claude memory (MEMORY.md, memory files), session history, and project data are permanently lost. The script warns before proceeding and shows how to inspect memory first.
 
 **Never touched** by any level: `.env`, `proxy/allowed-domains.txt`, `~/.ssh/`, host `~/.claude/`.
 

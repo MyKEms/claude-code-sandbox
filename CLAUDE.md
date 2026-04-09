@@ -79,9 +79,8 @@ Claude Code stores memory, sessions, and project data in its home config dir (`/
 |---|---|---|---|---|
 | **Soft** (`wipe --soft`) | KEPT | Cleared | KEPT | KEPT |
 | **Hard** (`wipe --hard`) | **DESTROYED** | **DESTROYED** | KEPT (on host) | KEPT |
-| **Nuclear** (`wipe --nuclear`) | **DESTROYED** | **DESTROYED** | KEPT (on host) | KEPT |
 
-Hard and nuclear wipe run `docker compose down -v` which destroys the `claude-state` volume. All memory files (MEMORY.md, memory files), session history, and project data are permanently lost. The wipe script warns about this before proceeding.
+Hard wipe runs `docker compose down -v` which destroys the `claude-state` volume. All memory files (MEMORY.md, memory files), session history, and project data are permanently lost. The wipe script warns about this before proceeding.
 
 To inspect memory from inside the container:
 ```bash
