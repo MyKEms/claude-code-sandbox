@@ -74,10 +74,10 @@ Each project has its own Docker volume (`claude-state`) where Claude stores memo
                             |
                    +------------------+
                    |  <name>-workspace|
-                   |  Ubuntu 24.04   |
-                   |  Node 20        |      workspace/
-                   |  Claude CLI     |  <-- mounted from host
-                   |  Playwright     |
+                   |  Ubuntu 24.04    |
+                   |  Node 20         |      workspace/
+                   |  Claude CLI      |  <-- mounted from host
+                   |  Playwright      |
                    +------------------+
                             |
                      SSH agent socket
