@@ -126,20 +126,29 @@ echo ""
 WORKSPACE_DEFAULT="$(pwd)/workspace"
 SSH_PATH_DEFAULT="$HOME/.ssh"
 
-case "$PLATFORM" in
-  macos)
-    MEMORY_DEFAULT="4G"
-    CPUS_DEFAULT="4"
-    ;;
-  windows)
-    MEMORY_DEFAULT="8G"
-    CPUS_DEFAULT="4"
-    ;;
-  linux)
-    MEMORY_DEFAULT="4G"
-    CPUS_DEFAULT="4"
-    ;;
-esac
+# Detect available system resources
+TOTAL_MEM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}' || true)
+TOTAL_CPUS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 0)
+
+if [ -n "$TOTAL_MEM_KB" ] && [ "$TOTAL_MEM_KB" -gt 0 ] 2>/dev/null; then
+  TOTAL_MEM_GB=$((TOTAL_MEM_KB / 1024 / 1024))
+  # Use ~50% of RAM for the workspace, minimum 2G, cap at 16G
+  HALF_MEM=$((TOTAL_MEM_GB / 2))
+  [ "$HALF_MEM" -lt 2 ] && HALF_MEM=2
+  [ "$HALF_MEM" -gt 16 ] && HALF_MEM=16
+  MEMORY_DEFAULT="${HALF_MEM}G"
+else
+  MEMORY_DEFAULT="4G"
+fi
+
+if [ "$TOTAL_CPUS" -gt 0 ] 2>/dev/null; then
+  # Use half of CPUs, minimum 2
+  HALF_CPUS=$((TOTAL_CPUS / 2))
+  [ "$HALF_CPUS" -lt 2 ] && HALF_CPUS=2
+  CPUS_DEFAULT="$HALF_CPUS"
+else
+  CPUS_DEFAULT="4"
+fi
 
 # ─── Git identity ──────────────────────────────────────────────────────────
 echo -e "${B}  Git Identity${N} (used for commits inside the container)"
@@ -244,6 +253,9 @@ echo ""
 
 # ─── Resources ──────────────────────────────────────────────────────────────
 echo -e "${B}  Resources${N}"
+if [ -n "$TOTAL_MEM_KB" ] && [ "$TOTAL_MEM_KB" -gt 0 ] 2>/dev/null && [ "$TOTAL_CPUS" -gt 0 ] 2>/dev/null; then
+  echo -e "  ${D}System: ${TOTAL_MEM_GB}G RAM, ${TOTAL_CPUS} CPUs (recommending ~50% for workspace)${N}"
+fi
 read -rp "  Workspace memory [$MEMORY_DEFAULT]: " MEM_INPUT
 MEMORY="${MEM_INPUT:-$MEMORY_DEFAULT}"
 read -rp "  Workspace CPUs [$CPUS_DEFAULT]: " CPU_INPUT
@@ -266,7 +278,7 @@ echo -e "  ${D}Leave empty to skip — commits will work but won't show as 'Veri
 echo ""
 
 # Show available public keys as hints
-PUB_KEYS=$(ls "$SSH_PATH"/*.pub 2>/dev/null | while read f; do echo "  /home/vscode/.ssh/$(basename "$f")"; done)
+PUB_KEYS=$(ls "$SSH_PATH"/*.pub 2>/dev/null | while read f; do echo "  /home/vscode/.ssh/$(basename "$f")"; done || true)
 if [ -n "$PUB_KEYS" ]; then
   echo -e "  ${G}Public keys found on your machine:${N}"
   echo "$PUB_KEYS"
