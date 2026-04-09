@@ -2,6 +2,11 @@
 
 A containerized, security-first setup for running AI coding agents (Claude Code CLI) safely on your machine.
 
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/698bcf98-43cd-40eb-8e43-b84f3ec52331" width="25%">
+</p>
+
+
 ## Why This Exists
 
 I created this because I wanted an AI coding assistant that can work on my projects autonomously -- without installing random packages on my machine, without reaching servers I didn't approve, without me watching every step. Something simple but safe.
