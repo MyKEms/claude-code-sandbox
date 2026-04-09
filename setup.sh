@@ -284,7 +284,7 @@ echo -e "  ${D}Leave empty to skip — commits will work but won't show as 'Veri
 echo ""
 
 # Show available public keys as hints
-PUB_KEYS=$(ls "$SSH_PATH"/*.pub 2>/dev/null | while read f; do echo "  /home/vscode/.ssh/$(basename "$f")"; done || true)
+PUB_KEYS=$(find "$SSH_PATH" -maxdepth 1 -name '*.pub' 2>/dev/null | while read -r f; do echo "  /home/vscode/.ssh/$(basename "$f")"; done || true)
 if [ -n "$PUB_KEYS" ]; then
   echo -e "  ${G}Public keys found on your machine:${N}"
   echo "$PUB_KEYS"

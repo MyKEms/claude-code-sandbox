@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get install -y shellcheck
+      - name: Lint shell scripts
+        run: shellcheck -s bash -e SC2012 scripts/*.sh setup.sh update.sh
+
+  compose-validate:
+    name: Docker Compose validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate docker-compose.yml
+        env:
+          WORKSPACE_PATH: ./workspace
+          SSH_HOST_PATH: /tmp
+          SSH_AGENT_SOCK_HOST: /dev/null
+          CLAUDE_CONFIG_PATH: /tmp
+        run: docker compose config --quiet

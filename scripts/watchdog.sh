@@ -22,7 +22,8 @@ COOLDOWN="${COOLDOWN:-10}"
 RESTART_COUNT=0
 
 log() {
-  local msg="[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] $*"
+  local msg
+  msg="[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] $*"
   echo "$msg" | tee -a "$LOG_FILE"
 }
 

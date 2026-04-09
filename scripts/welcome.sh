@@ -68,9 +68,8 @@ fi
 
 # SSH agent
 echo -e -n "  ${B}SSH Agent:${N}   "
-KEY=$(ssh-add -l 2>/dev/null)
-if [ $? -eq 0 ]; then
-  echo -e "${G}$(echo "$KEY" | wc -l | xargs) key(s)${N} – $(echo "$KEY" | head -1 | awk '{print $3}')"
+if KEY=$(ssh-add -l 2>/dev/null); then
+  echo -e "${G}$(echo "$KEY" | wc -l | xargs) key(s)${N} - $(echo "$KEY" | head -1 | awk '{print $3}')"
 else
   echo -e "${Y}not available${N} (check SSH agent on host)"
 fi

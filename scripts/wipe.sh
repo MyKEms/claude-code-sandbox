@@ -12,10 +12,9 @@ set -uo pipefail
 B="\033[1m"
 R="\033[31m"
 G="\033[32m"
-Y="\033[33m"
 N="\033[0m"
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 echo -e "${B}=== Claude Code Sandbox - Wipe Tool ===${N}"
 echo ""
