@@ -193,11 +193,6 @@ case "$AGENT_CHOICE" in
     read -rp "  1Password socket [$SSH_SOCK_DEFAULT]: " SSH_SOCK_INPUT
     SSH_SOCK="${SSH_SOCK_INPUT:-$SSH_SOCK_DEFAULT}"
 
-    echo ""
-    echo -e "  ${D}1Password CLI ('op') is also installed in the container.${N}"
-    echo -e "  ${D}App integration (biometric) does not work cross-platform in Docker.${N}"
-    echo -e "  ${D}To use 'op' inside the container, set OP_SERVICE_ACCOUNT_TOKEN in .env${N}"
-    echo -e "  ${D}or resolve secrets on host with 'op read' and pass as env vars.${N}"
     ;;
   2)
     AGENT_PROVIDER="keeper"

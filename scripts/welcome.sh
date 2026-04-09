@@ -75,18 +75,6 @@ else
   echo -e "${Y}not available${N} (check SSH agent on host)"
 fi
 
-# 1Password CLI
-echo -e -n "  ${B}1Password:${N}  "
-if command -v op &>/dev/null; then
-  if [ -n "${OP_SERVICE_ACCOUNT_TOKEN:-}" ]; then
-    echo -e "${G}service account${N}"
-  else
-    echo -e "${D}installed (set OP_SERVICE_ACCOUNT_TOKEN or use 'op read' on host)${N}"
-  fi
-else
-  echo -e "${D}not installed${N}"
-fi
-
 # Claude auth
 echo -e -n "  ${B}Auth:${N}        "
 if [ -f "$CLAUDE_DIR/.credentials.json" ] && grep -q '"accessToken"' "$CLAUDE_DIR/.credentials.json" 2>/dev/null; then

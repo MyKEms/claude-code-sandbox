@@ -1,7 +1,7 @@
 # ============================================================
-# Safe Agentic AI — Workspace Container
+# Claude Code Sandbox — Workspace Container
 # ============================================================
-# Ubuntu 24.04 with Node 20, Claude CLI, Playwright, 1Password CLI
+# Ubuntu 24.04 with Node 20, Claude CLI, Playwright
 # Supports both amd64 and arm64 (Apple Silicon) natively.
 # All network traffic routes through Squid proxy.
 # ============================================================
@@ -24,14 +24,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     htop \
   && rm -rf /var/lib/apt/lists/*
-
-# --- 1Password CLI (vault access from workspace) ---
-RUN ARCH=$(dpkg --print-architecture) \
-    && curl -sSfo /tmp/op.zip \
-       "https://cache.agilebits.com/dist/1P/op2/pkg/v2.32.0/op_linux_${ARCH}_v2.32.0.zip" \
-    && unzip -o /tmp/op.zip op -d /usr/local/bin \
-    && chmod +x /usr/local/bin/op \
-    && rm -f /tmp/op.zip
 
 # --- Node.js 20 ---
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
@@ -59,8 +51,7 @@ RUN echo 'Acquire::http::Proxy "http://proxy:3128/";\nAcquire::https::Proxy "htt
 
 # --- Non-root user setup ---
 USER vscode
-RUN mkdir -p /home/vscode/.npm /home/vscode/.ssh-agent \
-    && mkdir -m 700 -p /home/vscode/.op
+RUN mkdir -p /home/vscode/.npm /home/vscode/.ssh-agent
 
 # --- Shell aliases & environment ---
 RUN echo '\n\

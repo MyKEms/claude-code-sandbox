@@ -72,9 +72,6 @@ services:
       - type: bind
         source: ${SSH_AGENT_SOCK_HOST:-/dev/null}
         target: /home/vscode/.ssh-agent/agent.sock
-      # --- 1Password CLI ---
-      # App integration socket doesn't work cross-platform (macOS → Linux).
-      # Use OP_SERVICE_ACCOUNT_TOKEN in .env instead.
       # --- SSH keys (read-only) ---
       - ${SSH_HOST_PATH}:/home/vscode/.ssh:ro
       # --- Scripts (read-only) ---
@@ -101,7 +98,6 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       CLAUDE_MODEL: ${CLAUDE_MODEL:-}
       CLAUDE_MAX_TURNS: ${CLAUDE_MAX_TURNS:-}
-      OP_SERVICE_ACCOUNT_TOKEN: ${OP_SERVICE_ACCOUNT_TOKEN:-}
       PROJECT_NAME: ${PROJECT_NAME:-claude}
     deploy:
       resources:

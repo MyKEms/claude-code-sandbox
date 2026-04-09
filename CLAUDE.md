@@ -7,7 +7,7 @@ A **template** for creating containerized, security-first environments for runni
 This repo is never used directly as a devcontainer. Run `./setup.sh <path>` to scaffold a new project folder from this template. Each project gets its own `.env`, proxy allowlist, and uniquely named containers.
 
 Two Docker containers per project:
-- **\<name\>-workspace** — Ubuntu 24.04 with Claude CLI, Node 20, Playwright, 1Password CLI. Has zero direct internet access.
+- **\<name\>-workspace** — Ubuntu 24.04 with Claude CLI, Node 20, Playwright. Has zero direct internet access.
 - **\<name\>-proxy** — Squid forward proxy. Allowlist-only egress. Default deny.
 
 The workspace can only reach the internet through the proxy. This makes `--dangerously-skip-permissions` safe: the agent has freedom inside a locked box.
@@ -20,7 +20,7 @@ Host machine
         ├── <name>-workspace (internal network, no internet)
         │     ├── Claude CLI (ccd = dangerous mode)
         │     ├── Playwright MCP (headless Chromium)
-        │     ├── 1Password CLI (op)
+        │     ├── SSH agent socket (1Password / Keeper / custom)
         │     └── /workspace ← shared folder from host
         └── <name>-proxy (Squid, allowlist-only)
               └── proxy/allowed-domains.txt
@@ -31,14 +31,14 @@ Host machine
 | File | Purpose |
 |---|---|
 | `docker-compose.yml` | Two-container orchestration, env var driven |
-| `.devcontainer/Dockerfile` | Workspace image (Node 20, Claude CLI, Playwright, 1Password CLI) |
+| `.devcontainer/Dockerfile` | Workspace image (Node 20, Claude CLI, Playwright) |
 | `.devcontainer/devcontainer.json` | VS Code lifecycle hooks |
 | `proxy/squid.conf` | Squid ACLs, timeouts for long-running agents |
 | `proxy/allowed-domains.txt` | Domain allowlist (~25 entries) |
 | `setup.sh` | Template scaffolding (creates project folders) and project configuration wizard |
 | `update.sh` | Update existing project with latest template files (preserves .env, domains, workspace) |
 | `scripts/preflight.sh` | Host-side check before build (conflicts, missing .env, Docker status) |
-| `scripts/setup-container.sh` | One-time container init (git config, 1Password CLI, MCP, Claude permissions, verification) |
+| `scripts/setup-container.sh` | One-time container init (git config, MCP, Claude permissions, verification) |
 | `scripts/welcome.sh` | Startup banner with status checks |
 | `scripts/watchdog.sh` | Auto-restart wrapper for long-running agents |
 | `scripts/monitor.sh` | Live dashboard (run from host) |
@@ -102,13 +102,6 @@ cat /home/vscode/.claude/projects/-workspace/memory/MEMORY.md
 **Fallback: API key.** Set `ANTHROPIC_API_KEY` in `.env` if OAuth isn't an option.
 
 The `welcome.sh` banner shows auth status on every container start. If it shows "not configured", run `claude login` on the host and restart the container.
-
-## 1Password CLI Support
-
-The `op` CLI is installed in the container image. 1Password desktop app integration (biometric) does **not** work cross-platform (macOS host → Linux container). Two working approaches:
-
-1. **Service account token** — set `OP_SERVICE_ACCOUNT_TOKEN` in `.env`. Best for automation. Usage: `op run --env-file=.env.tpl -- command`
-2. **Resolve on host** — run `op read "op://vault/item/field"` on your host (biometric triggers there), pass values as env vars into the container.
 
 ## SSH Agent Support
 
