@@ -86,7 +86,7 @@ Each project has its own Docker volume (`claude-state`) where Claude stores memo
 
 Two Docker networks. The workspace container has **zero direct internet access** - every outbound request must pass through the Squid proxy, which enforces a domain allowlist (~25 domains). Anything not on the list is dropped.
 
-This means `--dangerously-skip-permissions` is safe to use: the agent has freedom inside a locked box.
+This means `--dangerously-skip-permissions` is safe to use: Claude Code has freedom inside a locked box.
 
 ## Prerequisites
 
@@ -110,12 +110,12 @@ cd claude-code-sandbox
 
 macOS / Linux:
 ```bash
-./setup.sh ~/my-project-agent
+./setup.sh ~/my-project
 ```
 
 Windows (run from a **WSL terminal**, not PowerShell/CMD):
 ```bash
-bash setup.sh ~/my-project-agent
+bash setup.sh ~/my-project
 ```
 
 This copies the template to a new folder, runs the configuration wizard, and initializes a git repo. Each project gets its own `.env`, proxy allowlist, and uniquely named containers.
@@ -123,7 +123,7 @@ This copies the template to a new folder, runs the configuration wizard, and ini
 **Step 3 - Open the project in VS Code:**
 
 ```bash
-code ~/my-project-agent
+code ~/my-project
 ```
 
 Then: `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows) → type **"Dev Containers: Reopen in Container"** → Enter.
@@ -160,8 +160,8 @@ This repo is a **template**. You never open it directly in VS Code Dev Container
 claude-code-sandbox/              ← template (keep clean, update with git pull)
   └── setup.sh                ← creates project folders
 
-~/my-project-agent/           ← project #1 (has its own .env, containers, allowlist)
-~/another-project-agent/      ← project #2 (fully independent)
+~/my-project/           ← project #1 (has its own .env, containers, allowlist)
+~/another-project/      ← project #2 (fully independent)
 ```
 
 Each project gets:
@@ -177,7 +177,7 @@ Each project gets:
 ```bash
 cd ~/claude-code-sandbox
 git pull                              # get latest template
-./update.sh ~/my-project-agent        # sync infrastructure files
+./update.sh ~/my-project        # sync infrastructure files
 # then rebuild container in VS Code
 ```
 Your `.env`, custom domains, and workspace files are preserved.
@@ -218,7 +218,7 @@ Available inside the workspace container:
 | `cc` | `claude` | Interactive coding session |
 | `ccd` | `claude --dangerously-skip-permissions` | Autonomous mode (safe in this container) |
 | `ccw` | watchdog mode via `watchdog.sh` | Auto-restart on crash, long-running agents |
-| `cch "task"` | headless autonomous agent | Fire-and-forget tasks |
+| `cch "task"` | headless autonomous mode | Fire-and-forget tasks |
 
 **Don't want `--dangerously-skip-permissions`?** Use `cc` (interactive mode) - Claude will ask before each action. The network isolation still protects you. You can also configure allowed tools granularly in `/workspace/.claude/settings.local.json` (e.g. allow `Bash(git:*)` and `Write(*)` but nothing else). This is a middle ground, though it can be less reliable than full autonomous mode for complex tasks.
 
