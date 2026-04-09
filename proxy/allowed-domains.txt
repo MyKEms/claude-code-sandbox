@@ -1,5 +1,5 @@
 # ============================================================
-# Allowed Domains — Squid Proxy Allowlist
+# Allowed Domains - Squid Proxy Allowlist
 # ============================================================
 # Only these domains can be reached from the workspace.
 # Edit and run: ./scripts/proxy-ctl.sh reload
@@ -28,24 +28,10 @@ status.anthropic.com
 .githubassets.com
 .ghcr.io
 
-# --- GitLab ---
-.gitlab.com
-.gitlab.io
-.gitlab-static.net
-
 # --- Cloudflare / CDN ---
 .cloudflare.com
-.cloudflareinsights.com
-.cloudflare-dns.com
-.one.one.one.one
-.workers.dev
-.pages.dev
 
-# --- Google (APIs, fonts, etc.) ---
-.googleapis.com
-.google.com
-
-# --- Microsoft / Azure (Playwright downloads) ---
+# --- Microsoft / Azure (Playwright browser downloads) ---
 .azureedge.net
 
 # --- System / Package Managers ---
@@ -55,36 +41,24 @@ status.anthropic.com
 .launchpad.net
 .debian.org
 
-# --- Python ---
-.pypi.org
-.pythonhosted.org
+# --- Python (uncomment if your project uses pip) ---
+# .pypi.org
+# .pythonhosted.org
 
-# --- Go / Rust ---
-.pkg.go.dev
-.crates.io
-.docs.rs
-
-# --- Documentation ---
-.stackoverflow.com
-.stackexchange.com
-.developer.mozilla.org
-.docs.python.org
-
-# --- Playwright ---
+# --- Playwright (headless Chromium) ---
 .playwright.dev
 
-# --- Docker ---
-.docker.io
-.docker.com
-
-# --- 1Password CLI ---
-.1password.com
-.agilebits.com
+# --- Docker (uncomment if pulling images inside container) ---
+# .docker.io
+# .docker.com
 
 # ============================================================
 # ADD YOUR DOMAINS BELOW
 # ============================================================
 # Examples:
 # .your-company.com
-# .your-server.example.com
-# .jira.atlassian.com
+# .gitlab.com              # GitLab access
+# .googleapis.com          # Google APIs, Playwright browser updates
+# .pypi.org                # Python packages
+# .crates.io               # Rust packages
+# .pkg.go.dev              # Go packages

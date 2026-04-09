@@ -85,7 +85,7 @@ Each project has its own Docker volume (`claude-state`) where Claude stores memo
                      (1Password / Keeper / custom)
 ```
 
-Two Docker networks. The workspace container has **zero direct internet access** - every outbound request must pass through the Squid proxy, which enforces a domain allowlist (~50 domains). Anything not on the list is dropped.
+Two Docker networks. The workspace container has **zero direct internet access** - every outbound request must pass through the Squid proxy, which enforces a domain allowlist (~25 domains). Anything not on the list is dropped.
 
 This means `--dangerously-skip-permissions` is safe to use: the agent has freedom inside a locked box.
 
@@ -435,7 +435,7 @@ claude-code-sandbox/
 │   └── devcontainer.json       # VS Code dev container config
 ├── proxy/
 │   ├── squid.conf              # Squid proxy (allowlist-only, default deny)
-│   └── allowed-domains.txt     # Domain allowlist (~50 domains)
+│   └── allowed-domains.txt     # Domain allowlist (~25 domains)
 ├── scripts/
 │   ├── preflight.sh            # Host-side checks before build
 │   ├── setup-container.sh      # One-time container init (postCreateCommand)

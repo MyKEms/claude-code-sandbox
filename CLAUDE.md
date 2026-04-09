@@ -34,7 +34,7 @@ Host machine
 | `.devcontainer/Dockerfile` | Workspace image (Node 20, Claude CLI, Playwright, 1Password CLI) |
 | `.devcontainer/devcontainer.json` | VS Code lifecycle hooks |
 | `proxy/squid.conf` | Squid ACLs, timeouts for long-running agents |
-| `proxy/allowed-domains.txt` | Domain allowlist (~50 entries) |
+| `proxy/allowed-domains.txt` | Domain allowlist (~25 entries) |
 | `setup.sh` | Template scaffolding (creates project folders) and project configuration wizard |
 | `update.sh` | Update existing project with latest template files (preserves .env, domains, workspace) |
 | `scripts/preflight.sh` | Host-side check before build (conflicts, missing .env, Docker status) |
