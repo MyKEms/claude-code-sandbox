@@ -6,6 +6,8 @@ Secure Dev Container template for running Claude Code CLI autonomously. Network-
     <img src="https://github.com/user-attachments/assets/698bcf98-43cd-40eb-8e43-b84f3ec52331" width="25%">
 </p>
 
+<!-- Demo GIF: record with setup.sh → VS Code → ccd → Claude working -->
+<!-- <p align="center"><img src="demo.gif" width="80%"></p> -->
 
 ## Why This Exists
 
