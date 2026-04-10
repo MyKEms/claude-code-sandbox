@@ -324,13 +324,24 @@ Bitwarden Desktop (open-source) ships a native SSH agent since version 2025.1.2.
 | Linux (deb/rpm) | `~/.bitwarden-ssh-agent.sock` |
 | Linux (Snap) | `~/snap/bitwarden/current/.bitwarden-ssh-agent.sock` |
 | Linux (Flatpak) | `~/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock` |
-| Windows | Not supported — Bitwarden uses a Windows named pipe, which cannot be mounted into a Docker container |
+| Windows | `/run/host-services/ssh-auth.sock` (Docker Desktop bridges the OpenSSH pipe, same as 1Password) |
 
-**Prerequisites:**
+**Prerequisites (all platforms):**
 - Bitwarden Desktop 2025.1.2 or newer
 - Settings → Apps → **"Use SSH Agent"** enabled
 - Restart Bitwarden Desktop after enabling
 - Docs: https://bitwarden.com/help/ssh-agent/
+
+**Windows extras** (Bitwarden replaces the Windows OpenSSH agent on the same named pipe `\\.\pipe\openssh-ssh-agent`, so the OS service must hand over first):
+1. Disable the Windows OpenSSH agent service from an admin PowerShell so Bitwarden can claim the pipe:
+   ```powershell
+   Stop-Service ssh-agent
+   Set-Service ssh-agent -StartupType Disabled
+   ```
+2. Enable Bitwarden's SSH agent and restart Bitwarden Desktop.
+3. Enable Docker Desktop → Settings → Resources → **WSL Integration** for your WSL distro.
+
+The same constraint applies to 1Password on Windows — only one app can hold the OpenSSH pipe at a time.
 
 ### Custom / Other
 

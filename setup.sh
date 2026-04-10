@@ -176,40 +176,20 @@ echo -e "${B}  SSH Agent${N}"
 echo ""
 echo "  Which SSH agent do you use?"
 echo -e "    ${C}1)${N} 1Password"
-if [ "$PLATFORM" != "windows" ]; then
-  echo -e "    ${C}2)${N} Bitwarden"
-  echo -e "    ${C}3)${N} Custom (other SSH agent)"
-  echo -e "    ${C}4)${N} None / skip"
-  DEFAULT_CHOICE=4
-else
-  echo -e "    ${C}2)${N} Custom (other SSH agent)"
-  echo -e "    ${C}3)${N} None / skip"
-  DEFAULT_CHOICE=3
-  echo ""
-  echo -e "  ${D}Note: Bitwarden SSH agent uses a Windows named pipe and${N}"
-  echo -e "  ${D}cannot be mounted into a Docker container — not offered here.${N}"
-fi
+echo -e "    ${C}2)${N} Bitwarden"
+echo -e "    ${C}3)${N} Custom (other SSH agent)"
+echo -e "    ${C}4)${N} None / skip"
 echo ""
-read -rp "  Choice [${DEFAULT_CHOICE}]: " AGENT_CHOICE
-AGENT_CHOICE="${AGENT_CHOICE:-$DEFAULT_CHOICE}"
+read -rp "  Choice [4]: " AGENT_CHOICE
+AGENT_CHOICE="${AGENT_CHOICE:-4}"
 
-# Map number → name (depends on platform because Bitwarden is hidden on Windows)
-if [ "$PLATFORM" != "windows" ]; then
-  case "$AGENT_CHOICE" in
-    1) AGENT_CHOICE_NAME="1password" ;;
-    2) AGENT_CHOICE_NAME="bitwarden" ;;
-    3) AGENT_CHOICE_NAME="custom" ;;
-    4) AGENT_CHOICE_NAME="none" ;;
-    *) AGENT_CHOICE_NAME="none" ;;
-  esac
-else
-  case "$AGENT_CHOICE" in
-    1) AGENT_CHOICE_NAME="1password" ;;
-    2) AGENT_CHOICE_NAME="custom" ;;
-    3) AGENT_CHOICE_NAME="none" ;;
-    *) AGENT_CHOICE_NAME="none" ;;
-  esac
-fi
+case "$AGENT_CHOICE" in
+  1) AGENT_CHOICE_NAME="1password" ;;
+  2) AGENT_CHOICE_NAME="bitwarden" ;;
+  3) AGENT_CHOICE_NAME="custom" ;;
+  4) AGENT_CHOICE_NAME="none" ;;
+  *) AGENT_CHOICE_NAME="none" ;;
+esac
 
 SSH_SOCK=""
 AGENT_PROVIDER="none"
@@ -229,7 +209,9 @@ case "$AGENT_CHOICE_NAME" in
         ;;
       windows)
         SSH_SOCK_DEFAULT="/run/host-services/ssh-auth.sock"
-        echo -e "  ${D}Windows: also enable Docker Desktop -> Settings -> Resources -> WSL Integration${N}"
+        echo -e "  ${D}Windows: enable Docker Desktop -> Settings -> Resources -> WSL Integration${N}"
+        echo -e "  ${D}for this WSL distro. The OpenSSH agent pipe is then bridged into${N}"
+        echo -e "  ${D}the Linux container at the path below.${N}"
         echo ""
         ;;
       linux)
@@ -239,8 +221,8 @@ case "$AGENT_CHOICE_NAME" in
     if [ -e "$SSH_SOCK_DEFAULT" ]; then
       echo -e "  ${G}Socket found at default path.${N}"
     elif [ "$PLATFORM" = "windows" ]; then
-      echo -e "  ${D}Socket is provided by Docker Desktop inside the container.${N}"
-      echo -e "  ${D}It won't be visible from WSL — this is normal.${N}"
+      echo -e "  ${Y}Socket not visible at this path — make sure Docker Desktop is${N}"
+      echo -e "  ${Y}running and WSL Integration is enabled for this distro.${N}"
     else
       echo -e "  ${Y}Socket not found at default path — is the SSH agent enabled?${N}"
     fi
@@ -270,9 +252,27 @@ case "$AGENT_CHOICE_NAME" in
       linux)
         SSH_SOCK_DEFAULT="$HOME/.bitwarden-ssh-agent.sock"
         ;;
+      windows)
+        # Bitwarden replaces the Windows OpenSSH agent on the same named pipe
+        # (\\.\pipe\openssh-ssh-agent), which Docker Desktop bridges into the
+        # Linux VM at the same path 1Password uses. Identical mechanism.
+        SSH_SOCK_DEFAULT="/run/host-services/ssh-auth.sock"
+        echo -e "  ${D}Windows prerequisites:${N}"
+        echo -e "  ${D}  1. Disable the Windows OpenSSH agent service so Bitwarden can${N}"
+        echo -e "  ${D}     take over the pipe (admin PowerShell):${N}"
+        echo -e "  ${D}       Stop-Service ssh-agent${N}"
+        echo -e "  ${D}       Set-Service ssh-agent -StartupType Disabled${N}"
+        echo -e "  ${D}  2. Enable Bitwarden Settings -> Apps -> 'Use SSH Agent', restart it${N}"
+        echo -e "  ${D}  3. Enable Docker Desktop -> Settings -> Resources -> WSL Integration${N}"
+        echo -e "  ${D}     for this WSL distro${N}"
+        echo ""
+        ;;
     esac
     if [ -n "$SSH_SOCK_DEFAULT" ] && [ -e "$SSH_SOCK_DEFAULT" ]; then
       echo -e "  ${G}Socket found at default path.${N}"
+    elif [ "$PLATFORM" = "windows" ]; then
+      echo -e "  ${Y}Socket not visible at this path — make sure Docker Desktop is${N}"
+      echo -e "  ${Y}running and WSL Integration is enabled for this distro.${N}"
     else
       echo -e "  ${Y}Socket not found — is Bitwarden running with SSH agent enabled?${N}"
     fi

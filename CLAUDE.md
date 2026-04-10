@@ -106,7 +106,7 @@ The `welcome.sh` banner shows auth status on every container start. If it shows 
 
 Three providers supported via `setup.sh`:
 1. **1Password** — native socket per platform
-2. **Bitwarden** — native socket (`~/.bitwarden-ssh-agent.sock` on macOS .dmg / Linux; sandboxed path on macOS App Store). Hidden on Windows because Bitwarden uses a named pipe there, which Docker can't mount.
+2. **Bitwarden** — native socket (`~/.bitwarden-ssh-agent.sock` on macOS .dmg / Linux; sandboxed path on macOS App Store; `/run/host-services/ssh-auth.sock` on Windows via Docker Desktop, same as 1Password). On Windows the user must first disable the Windows OpenSSH agent service (`Stop-Service ssh-agent` + `Set-Service ssh-agent -StartupType Disabled`) so Bitwarden can take over the `\\.\pipe\openssh-ssh-agent` named pipe.
 3. **Custom** — any Unix socket path
 
 The socket is mounted to `/home/vscode/.ssh-agent/agent.sock` inside the container regardless of provider. This is a separate directory from `.ssh` (which is mounted read-only from the host) to avoid mount conflicts.
