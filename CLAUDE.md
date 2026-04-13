@@ -34,7 +34,9 @@ Host machine
 | `.devcontainer/Dockerfile` | Workspace image (Node 20, Claude CLI, Playwright) |
 | `.devcontainer/devcontainer.json` | VS Code lifecycle hooks |
 | `proxy/squid.conf` | Squid ACLs, timeouts for long-running agents |
-| `proxy/allowed-domains.txt` | Domain allowlist (~25 entries) |
+| `proxy/allowed-domains.txt` | Domain allowlist — HTTP/HTTPS (~25 entries) |
+| `proxy/trusted-ssh-hosts.txt` | SSH host allowlist — domains for SSH CONNECT (GitHub, GitLab + user-added) |
+| `proxy/allowed-networks.txt` | Network allowlist — IPs/CIDRs, all ports (placed before Safe_ports check in squid.conf) |
 | `setup.sh` | Template scaffolding (creates project folders) and project configuration wizard |
 | `update.sh` | Update existing project with latest template files (preserves .env, domains, workspace) |
 | `scripts/preflight.sh` | Host-side check before build (conflicts, missing .env, Docker status) |
@@ -42,7 +44,7 @@ Host machine
 | `scripts/welcome.sh` | Startup banner with status checks |
 | `scripts/watchdog.sh` | Auto-restart wrapper for long-running agents |
 | `scripts/monitor.sh` | Live dashboard (run from host) |
-| `scripts/proxy-ctl.sh` | Add/remove domains, reload proxy, test URLs |
+| `scripts/proxy-ctl.sh` | Manage proxy allowlists: domains, networks (IP/CIDR), SSH hosts |
 | `scripts/wipe.sh` | Clean reset (soft/hard/nuclear) |
 | `.env.example` | Configuration reference — setup.sh generates .env from wizard answers |
 

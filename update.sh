@@ -147,30 +147,43 @@ fi
 
 echo -e "  ${G}$CHANGES file(s) updated.${N}"
 
-# ─── Check allowed-domains.txt ───────────────────────────────────────────
-# Update the base domains (above the "ADD YOUR DOMAINS" marker) while
-# preserving the user's custom domains (below the marker)
-MARKER="# ADD YOUR DOMAINS BELOW"
-TEMPLATE_DOMAINS="$TEMPLATE_DIR/proxy/allowed-domains.txt"
-PROJECT_DOMAINS="$TARGET_DIR/proxy/allowed-domains.txt"
+# ─── Sync proxy allowlist files (marker-based merge) ────────────────────
+# Each proxy allowlist file has a marker line (e.g. "# ADD YOUR ... BELOW").
+# Template base (above marker) is replaced; user entries (below marker)
+# are preserved. If a file doesn't exist in the project yet, copy it.
+_sync_allowlist() {
+  local filename="$1" marker="$2"
+  local template_file="$TEMPLATE_DIR/proxy/$filename"
+  local project_file="$TARGET_DIR/proxy/$filename"
 
-if [ -f "$TEMPLATE_DOMAINS" ] && [ -f "$PROJECT_DOMAINS" ]; then
-  # Extract base section from template (up to and including marker block)
-  TEMPLATE_BASE=$(sed -n "1,/$MARKER/p" "$TEMPLATE_DOMAINS")
-  # Extract user's custom domains (after the marker block + examples)
-  USER_CUSTOM=$(sed -n "/$MARKER/,\$p" "$PROJECT_DOMAINS" | tail -n +1)
+  if [ ! -f "$template_file" ]; then return; fi
 
-  if ! diff -q <(sed -n "1,/$MARKER/p" "$PROJECT_DOMAINS") <(echo "$TEMPLATE_BASE") &>/dev/null; then
-    echo ""
-    echo -e "  ${Y}Base domains updated in allowed-domains.txt${N}"
-    echo -e "  ${D}Your custom domains (below '$MARKER') are preserved.${N}"
-    # Write: template base + user's custom section
-    echo "$TEMPLATE_BASE" > "$PROJECT_DOMAINS"
-    echo "$USER_CUSTOM" >> "$PROJECT_DOMAINS"
-    # Remove the duplicate marker line
-    awk "!seen[\$0]++ || \$0 !~ /$MARKER/" "$PROJECT_DOMAINS" > "$PROJECT_DOMAINS.tmp" && mv "$PROJECT_DOMAINS.tmp" "$PROJECT_DOMAINS"
+  if [ ! -f "$project_file" ]; then
+    # First update after this feature was added — copy template as-is
+    cp "$template_file" "$project_file"
+    echo -e "  ${G}+ proxy/$filename${N} (new)"
+    return
   fi
-fi
+
+  local template_base project_base user_custom
+  template_base=$(sed -n "1,/$marker/p" "$template_file")
+  project_base=$(sed -n "1,/$marker/p" "$project_file")
+  user_custom=$(sed -n "/$marker/,\$p" "$project_file" | tail -n +1)
+
+  if ! diff -q <(echo "$project_base") <(echo "$template_base") &>/dev/null; then
+    echo -e "  ${Y}Base entries updated in $filename${N}"
+    echo -e "  ${D}Your custom entries (below '$marker') are preserved.${N}"
+    echo "$template_base" > "$project_file"
+    echo "$user_custom" >> "$project_file"
+    # Remove the duplicate marker line
+    awk "!seen[\$0]++ || \$0 !~ /$marker/" "$project_file" > "$project_file.tmp" \
+      && mv "$project_file.tmp" "$project_file"
+  fi
+}
+
+_sync_allowlist "allowed-domains.txt"    "# ADD YOUR DOMAINS BELOW"   "domains"
+_sync_allowlist "trusted-ssh-hosts.txt"  "# ADD YOUR SSH HOSTS BELOW" "SSH hosts"
+_sync_allowlist "allowed-networks.txt"   "# ADD YOUR NETWORKS BELOW"  "networks"
 
 # ─── Check .env for missing variables ────────────────────────────────────
 echo ""

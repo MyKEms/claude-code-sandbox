@@ -22,6 +22,8 @@ services:
     volumes:
       - ./proxy/squid.conf:/etc/squid/squid.conf:ro
       - ./proxy/allowed-domains.txt:/etc/squid/allowed-domains.txt:ro
+      - ./proxy/trusted-ssh-hosts.txt:/etc/squid/trusted-ssh-hosts.txt:ro
+      - ./proxy/allowed-networks.txt:/etc/squid/allowed-networks.txt:ro
       - squid-cache:/var/spool/squid
     healthcheck:
       test: ["CMD-SHELL", "squid -k check || exit 1"]

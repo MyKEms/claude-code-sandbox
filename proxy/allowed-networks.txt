@@ -1,0 +1,16 @@
+# ============================================================
+# Allowed Networks — IP/CIDR Allowlist (all ports)
+# ============================================================
+# IPs and CIDR ranges listed here can be reached from the
+# workspace on ANY port (HTTP, HTTPS, SSH, custom services).
+# Use CIDR notation for subnets (e.g. 192.168.0.0/24).
+# Manage with: ./scripts/proxy-ctl.sh allow / block
+# ============================================================
+
+# ============================================================
+# ADD YOUR NETWORKS BELOW
+# ============================================================
+# Examples:
+# 192.168.0.0/24
+# 10.0.0.5
+# 172.16.0.0/12

@@ -197,7 +197,9 @@ Your `.env`, custom domains, and workspace files are preserved.
 | `proxy-egress` | Proxy-only network with internet access |
 | `claude-state` (volume) | Persistent Claude CLI state: memory, sessions, auth tokens |
 | `workspace/` | Shared folder between host and container |
-| `proxy/allowed-domains.txt` | Domain allowlist for egress |
+| `proxy/allowed-domains.txt` | Domain allowlist (HTTP/HTTPS) |
+| `proxy/trusted-ssh-hosts.txt` | SSH host allowlist (CONNECT to port 22 by domain) |
+| `proxy/allowed-networks.txt` | Network allowlist (all ports by IP/CIDR) |
 
 ## How It Works
 
@@ -224,26 +226,40 @@ Available inside the workspace container:
 
 ## Proxy Management
 
-> **Run from the host**, not from inside the container. The script edits the allowlist file on the host and calls `docker compose` to reload the proxy.
+> **Run from the host**, not from inside the container. The script edits allowlist files on the host and restarts the proxy.
+
+Three types of rules, managed by `./scripts/proxy-ctl.sh`:
+
+| Rule type | What it allows | Managed file |
+|---|---|---|
+| **Domain** (`add`/`remove`) | HTTP/HTTPS to a domain | `proxy/allowed-domains.txt` |
+| **Network** (`allow`/`block`) | All ports (HTTP, HTTPS, SSH, custom) to an IP or CIDR | `proxy/allowed-networks.txt` |
+| **SSH host** (`add-ssh`/`remove-ssh`) | SSH CONNECT to a domain | `proxy/trusted-ssh-hosts.txt` |
 
 ```bash
-# List currently allowed domains
-./scripts/proxy-ctl.sh list
+# Domain rules (HTTP/HTTPS)
+./scripts/proxy-ctl.sh add .pypi.org              # allow pypi.org + subdomains
+./scripts/proxy-ctl.sh remove .pypi.org
 
-# Add a domain
-./scripts/proxy-ctl.sh add .pypi.org
+# Network rules (all ports to IPs/subnets — HTTP, SSH, custom services)
+./scripts/proxy-ctl.sh allow 192.168.0.0/24       # allow entire subnet, all ports
+./scripts/proxy-ctl.sh allow 10.0.0.5             # allow single IP, all ports
+./scripts/proxy-ctl.sh block 192.168.0.0/24       # revoke
 
-# Remove a domain
-./scripts/proxy-ctl.sh remove .example.com
+# SSH host rules (SSH CONNECT to domains)
+./scripts/proxy-ctl.sh add-ssh .bitbucket.org     # allow SSH to Bitbucket
+./scripts/proxy-ctl.sh add-ssh git.internal.com   # allow SSH to internal git
+./scripts/proxy-ctl.sh remove-ssh .bitbucket.org
 
-# Test if a URL is reachable through the proxy
+# General
+./scripts/proxy-ctl.sh list                       # show all active rules
 ./scripts/proxy-ctl.sh test https://api.anthropic.com
-
-# Tail proxy logs
-./scripts/proxy-ctl.sh logs
+./scripts/proxy-ctl.sh logs                       # tail proxy access logs
 ```
 
 Changes take effect after reload. No container restart needed.
+
+GitHub and GitLab SSH access is included by default in `proxy/trusted-ssh-hosts.txt`.
 
 ## Monitor
 
@@ -493,7 +509,9 @@ claude-code-sandbox/
 │   └── devcontainer.json       # VS Code dev container config
 ├── proxy/
 │   ├── squid.conf              # Squid proxy (allowlist-only, default deny)
-│   └── allowed-domains.txt     # Domain allowlist (~25 domains)
+│   ├── allowed-domains.txt     # Domain allowlist — HTTP/HTTPS (~25 domains)
+│   ├── trusted-ssh-hosts.txt   # SSH host allowlist — SSH CONNECT by domain
+│   └── allowed-networks.txt    # Network allowlist — all ports by IP/CIDR
 ├── scripts/
 │   ├── preflight.sh            # Host-side checks before build
 │   ├── setup-container.sh      # One-time container init (postCreateCommand)

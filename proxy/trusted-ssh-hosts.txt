@@ -1,0 +1,20 @@
+# ============================================================
+# Trusted SSH Hosts — SSH CONNECT Allowlist
+# ============================================================
+# Domains listed here can be reached via SSH (port 22) from
+# the workspace through the Squid proxy (CONNECT method).
+# Prefix with . to match all subdomains.
+# Manage with: ./scripts/proxy-ctl.sh add-ssh / remove-ssh
+# ============================================================
+
+# --- Git hosting (default) ---
+.github.com
+.gitlab.com
+
+# ============================================================
+# ADD YOUR SSH HOSTS BELOW
+# ============================================================
+# Examples:
+# .bitbucket.org
+# .ssh.dev.azure.com
+# git.your-company.com
